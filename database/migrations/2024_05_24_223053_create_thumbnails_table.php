@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('thumbnails', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pornstar_id')->constrained('pornstars')->onDelete('cascade');
+            $table->integer('height')->nullable();
+            $table->integer('width')->nullable();
+            $table->string('type')->nullable();
+            $table->string('url');
+            $table->string('local_path')->nullable();
             $table->timestamps();
         });
     }

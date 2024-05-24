@@ -13,6 +13,16 @@ return new class extends Migration
     {
         Schema::create('pornstar_stats', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pornstar_id')->constrained('pornstars')->onDelete('cascade');
+            $table->integer('subscriptions')->nullable();
+            $table->integer('monthlySearches')->nullable();
+            $table->integer('views')->nullable();
+            $table->integer('videosCount')->nullable();
+            $table->integer('premiumVideosCount')->nullable();
+            $table->integer('whiteLabelVideoCount')->nullable();
+            $table->integer('rank')->nullable();
+            $table->integer('rankPremium')->nullable();
+            $table->integer('rankWl')->nullable();
             $table->timestamps();
         });
     }

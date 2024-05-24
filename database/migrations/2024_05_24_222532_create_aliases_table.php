@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('aliases', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pornstar_id')->constrained('pornstars')->onDelete('cascade');
+            $table->string('alias');
             $table->timestamps();
         });
     }

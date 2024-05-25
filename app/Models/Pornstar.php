@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pornstar extends Model
 {
     protected $fillable = [
-        'name', 'link', 'license', 'wlStatus', 'hairColor', 'ethnicity',
+        'pornhub_id','name', 'link', 'license', 'wlStatus', 'hairColor', 'ethnicity',
         'tattoos', 'piercings', 'breastSize', 'breastType', 'gender', 'orientation', 'age'
     ];
 

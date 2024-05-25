@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('tattoos')->nullable();
             $table->boolean('piercings')->nullable();
             $table->integer('breastSize')->nullable();
-            $table->char('breastType', 1)->nullable();
+            $table->char('breastType', 5)->nullable();
             $table->string('gender');
             $table->string('orientation')->nullable();
             $table->integer('age')->nullable();

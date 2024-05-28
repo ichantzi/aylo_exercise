@@ -7,8 +7,13 @@ use App\Models\Thumbnail;
 
 class ThumbnailRepository implements ThumbnailRepositoryInterface
 {
-    public function upsert($data)
+    public function upsert(array $data)
     {
-        return Thumbnail::upsert($data, ['pornstar_id', 'type'], ['height', 'width', 'url', 'updated_at']);
+        foreach ($data as $item) {
+            Thumbnail::updateOrCreate(
+                ['pornstar_id' => $item['pornstar_id'], 'url' => $item['url']],
+                $item
+            );
+        }
     }
 }

@@ -7,8 +7,13 @@ use App\Models\Alias;
 
 class AliasRepository implements AliasRepositoryInterface
 {
-    public function upsert($data)
+    public function upsert(array $data)
     {
-        return Alias::upsert($data, ['pornstar_id', 'alias'], ['updated_at']);
+        foreach ($data as $item) {
+            Alias::updateOrCreate(
+                ['pornstar_id' => $item['pornstar_id'], 'alias' => $item['alias']],
+                $item
+            );
+        }
     }
 }

@@ -7,8 +7,13 @@ use App\Models\PornstarStats;
 
 class PornstarStatsRepository implements PornstarStatsRepositoryInterface
 {
-    public function upsert($data)
+    public function upsert(array $data)
     {
-        return PornstarStats::upsert($data, ['pornstar_id'], ['subscriptions', 'monthlySearches', 'views', 'videosCount', 'premiumVideosCount', 'whiteLabelVideoCount', 'rank', 'rankPremium', 'rankWl', 'updated_at']);
+        foreach ($data as $item) {
+            PornstarStats::updateOrCreate(
+                ['pornstar_id' => $item['pornstar_id']],
+                $item
+            );
+        }
     }
 }

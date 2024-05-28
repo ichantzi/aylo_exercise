@@ -16,4 +16,9 @@ class ThumbnailRepository implements ThumbnailRepositoryInterface
             );
         }
     }
+
+    public function getAll()
+    {
+        return Thumbnail::all();
+    }
 }

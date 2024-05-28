@@ -6,4 +6,6 @@ interface ThumbnailRepositoryInterface
 {
     public function upsert(array $data);
 
+    public function getAll();
+
 }

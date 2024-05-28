@@ -6,7 +6,7 @@ use App\Interfaces\Repositories\PornstarRepositoryInterface;
 use App\Interfaces\Repositories\PornstarStatsRepositoryInterface;
 use App\Interfaces\Repositories\AliasRepositoryInterface;
 use App\Interfaces\Repositories\ThumbnailRepositoryInterface;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ProcessPornstarDataService
 {
@@ -34,7 +34,6 @@ class ProcessPornstarDataService
         $aliases = [];
         $thumbnails = [];
 
-        $generationDate = $data['generationDate'];
         $items = $data['items'];
         foreach ($items as $item) {
             if (!isset($item['id'], $item['name'], $item['attributes'])) {
@@ -91,15 +90,17 @@ class ProcessPornstarDataService
 
             if (isset($item['thumbnails'])) {
                 foreach ($item['thumbnails'] as $thumb) {
-                    $thumbnails[] = [
-                        'pornstar_id' => $item['id'],
-                        'type' => $thumb['type'],
-                        'height' => $thumb['height'] ?? 0,
-                        'width' => $thumb['width'] ?? 0,
-                        'url' => $thumb['urls'][0] ?? '',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
+                    foreach ($thumb['urls'] as $url) {
+                        $thumbnails[] = [
+                            'pornstar_id' => $item['id'],
+                            'type' => $thumb['type'],
+                            'height' => $thumb['height'] ?? 0,
+                            'width' => $thumb['width'] ?? 0,
+                            'url' => $url,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
                 }
             }
         }
@@ -108,10 +109,6 @@ class ProcessPornstarDataService
         $this->processInBatches($pornstarStats, 'pornstarStatsRepo');
         $this->processInBatches($aliases, 'aliasRepo');
         $this->processInBatches($thumbnails, 'thumbnailRepo');
-
-//        foreach ($thumbnails as $thumb) {
-//            $this->cacheImage($thumb);
-//        }
     }
 
     private function processInBatches(array $data, $repositoryName, $batchSize = 40000)
@@ -123,18 +120,8 @@ class ProcessPornstarDataService
             try {
                 $repository->upsert($chunk);
             } catch (\Exception $e) {
-                \Log::error("Error processing batch in {$repositoryName}: " . $e->getMessage());
+                Log::error("Error processing batch in {$repositoryName}: " . $e->getMessage());
             }
         }
-    }
-
-    private function cacheImage($thumbnail)
-    {
-        $url = $thumbnail['url'];
-        $contents = file_get_contents($url);
-        $name = basename($url);
-        $path = 'public/thumbnails/' . $name;
-
-        Storage::put($path, $contents);
     }
 }

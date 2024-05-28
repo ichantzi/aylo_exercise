@@ -1,8 +1,8 @@
 <?php
 
 use App\Jobs\RunFetchPornstarDataCommandJob;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+//use Illuminate\Support\Facades\Artisan;
 
 Schedule::job(new RunFetchPornstarDataCommandJob())->hourly();
 

@@ -24,4 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+use App\Http\Controllers\PornstarController;
+
+Route::get('/pornstars/{id}', [PornstarController::class, 'show']);
+
+
 require __DIR__.'/auth.php';

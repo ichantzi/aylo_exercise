@@ -10,6 +10,8 @@ interface PornstarRepositoryInterface
 
     public function find($id);
 
+    public function searchByName(string $name);
+
 
 }
 

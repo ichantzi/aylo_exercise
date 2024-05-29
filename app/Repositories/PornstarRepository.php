@@ -24,6 +24,12 @@ class PornstarRepository implements PornstarRepositoryInterface
 
     public function find($id)
     {
-        return Pornstar::findOrFail($id);
+        return Pornstar::with('thumbnails', 'aliases', 'stats')->findOrFail($id);
+    }
+
+
+    public function searchByName(string $name)
+    {
+        return Pornstar::where('name', 'like', "%{$name}%")->get();
     }
 }

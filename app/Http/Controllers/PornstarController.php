@@ -20,7 +20,7 @@ class PornstarController extends Controller
 
         $imageKey = "pornstar_image:{$id}_tablet"; // or whatever type you need
         $compressedImage = Redis::get($imageKey);
-        $image = gzuncompress($compressedImage);
+        $image = $compressedImage ? gzuncompress($compressedImage) : '';
 
         return inertia('PornstarShow', [
             'pornstar' => $pornstar,

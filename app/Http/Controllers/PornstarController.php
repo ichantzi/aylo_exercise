@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\PornstarRepository;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Http\Request;
 
 class PornstarController extends Controller
 {
@@ -14,9 +15,25 @@ class PornstarController extends Controller
         $this->pornstarRepository = $pornstarRepository;
     }
 
+    public function index()
+    {
+        return inertia('PornstarIndex');
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $pornstars = $this->pornstarRepository->searchByName($query);
+        return response()->json($pornstars);
+    }
+
     public function show($id)
     {
         $pornstar = $this->pornstarRepository->find($id);
+
+        if (!$pornstar) {
+            abort(404, 'Pornstar not found');
+        }
 
         $imageKey = "pornstar_image:{$id}_tablet"; // or whatever type you need
         $compressedImage = Redis::get($imageKey);
@@ -24,8 +41,9 @@ class PornstarController extends Controller
 
         return inertia('PornstarShow', [
             'pornstar' => $pornstar,
-            'image' => base64_encode($image),
+            'image' => $image ? base64_encode($image) : null,
         ]);
     }
+
 
 }

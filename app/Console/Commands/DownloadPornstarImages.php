@@ -27,7 +27,7 @@ class DownloadPornstarImages extends Command
     public function handle(DownloadPornstarImagesService $service)
     {
         try {
-            $service->downloadImages();
+            $service->downloadImages(); // pass bool:true parameter to flush redis db
             $this->info('Pornstar images downloaded successfully.');
         } catch (\Exception $e) {
             $this->error('Error: ' . $e->getMessage());

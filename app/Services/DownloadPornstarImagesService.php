@@ -3,50 +3,60 @@
 namespace App\Services;
 
 use App\Interfaces\Repositories\ThumbnailRepositoryInterface;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use GuzzleHttp\Client;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
 
 class DownloadPornstarImagesService
 {
     protected $thumbnailRepo;
+    protected $client;
+    protected $concurrency;
 
-    public function __construct(ThumbnailRepositoryInterface $thumbnailRepo)
+    public function __construct(ThumbnailRepositoryInterface $thumbnailRepo, $concurrency = 20)
     {
         $this->thumbnailRepo = $thumbnailRepo;
+        $this->client = new Client();
+        $this->concurrency = $concurrency;
     }
 
-    public function downloadImages()
+    public function downloadImages($flushRedis = false)
     {
-        ini_set('memory_limit', '256M'); // Set memory limit to 256 megabytes
+        if ($flushRedis) {
+            Redis::flushdb();
+        }
 
         $thumbnails = $this->thumbnailRepo->getAll();
-
-        foreach ($thumbnails as $thumbnail) {
-            $this->cacheImage($thumbnail->url, $thumbnail->pornstar_id, $thumbnail->type);
-        }
-    }
-
-    private function cacheImage($url, $pornstarId, $type)
-    {
-        $decodedUrl = urldecode($url);
-        $cacheKey = $this->generateCacheKey($decodedUrl, $pornstarId, $type);
-
-        if (!Redis::exists($cacheKey)) {
-            try {
-                $image = Http::get($decodedUrl)->body();
-                Redis::set($cacheKey, $image);
-                Redis::expire($cacheKey, 604800);
-            } catch (\Exception $e) {
-                Log::error("Error downloading or caching image: " . $e->getMessage());
+        $requests = function ($thumbnails) {
+            foreach ($thumbnails as $thumbnail) {
+                yield new Request('GET', urldecode($thumbnail->url));
             }
-        }
+        };
 
-        return $cacheKey;
+        $pool = new Pool($this->client, $requests($thumbnails), [
+            'concurrency' => $this->concurrency,
+            'fulfilled' => function ($response, $index) use ($thumbnails) {
+                $thumbnail = $thumbnails[$index];
+                $this->cacheImage($response->getBody(), $thumbnail->pornstar_id, $thumbnail->type);
+            },
+            'rejected' => function ($reason, $index) {
+                Log::error("Error downloading image: " . $reason);
+            },
+        ]);
+
+        $promise = $pool->promise();
+        $promise->wait();
     }
 
-    private function generateCacheKey($url, $pornstarId, $type)
+    private function cacheImage($imageContent, $pornstarId, $type)
     {
-        return 'image:' . $pornstarId . ':' . $type . ':' . md5($url);
+        $key = "pornstar_image:{$pornstarId}_{$type}";
+
+        if (!Redis::exists($key)) {
+            $compressedImage = gzcompress($imageContent);
+            Redis::set($key, $compressedImage);
+        }
     }
 }

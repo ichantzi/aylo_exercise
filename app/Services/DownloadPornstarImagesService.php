@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Interfaces\Repositories\ThumbnailRepositoryInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redis;
 
 class DownloadPornstarImagesService
 {
@@ -18,6 +18,8 @@ class DownloadPornstarImagesService
 
     public function downloadImages()
     {
+        ini_set('memory_limit', '256M'); // Set memory limit to 256 megabytes
+
         $thumbnails = $this->thumbnailRepo->getAll();
 
         foreach ($thumbnails as $thumbnail) {
@@ -28,20 +30,23 @@ class DownloadPornstarImagesService
     private function cacheImage($url, $pornstarId, $type)
     {
         $decodedUrl = urldecode($url);
+        $cacheKey = $this->generateCacheKey($decodedUrl, $pornstarId, $type);
 
-        $directory = "public/pornstars/{$pornstarId}/{$type}";
-        if (!Storage::exists($directory)) {
-            Storage::makeDirectory($directory);
+        if (!Redis::exists($cacheKey)) {
+            try {
+                $image = Http::get($decodedUrl)->body();
+                Redis::set($cacheKey, $image);
+                Redis::expire($cacheKey, 604800);
+            } catch (\Exception $e) {
+                Log::error("Error downloading or caching image: " . $e->getMessage());
+            }
         }
 
-        $filename = basename($decodedUrl);
-        $filePath = "{$directory}/{$filename}";
+        return $cacheKey;
+    }
 
-        if (!Storage::exists($filePath)) {
-            $image = Http::get($decodedUrl)->body();
-            Storage::put($filePath, $image);
-        }
-
-        return Storage::url($filePath);
+    private function generateCacheKey($url, $pornstarId, $type)
+    {
+        return 'image:' . $pornstarId . ':' . $type . ':' . md5($url);
     }
 }

@@ -11,7 +11,7 @@ class ThumbnailRepository implements ThumbnailRepositoryInterface
     {
         foreach ($data as $item) {
             Thumbnail::updateOrCreate(
-                ['pornstar_id' => $item['pornstar_id'], 'url' => $item['url']],
+                ['pornstar_id' => $item['pornstar_id'], 'url' => $item['url'], 'type' => $item['type']],
                 $item
             );
         }

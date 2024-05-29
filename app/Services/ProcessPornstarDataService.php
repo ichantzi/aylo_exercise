@@ -29,11 +29,16 @@ class ProcessPornstarDataService
 
     public function process($data)
     {
-        $pornstars = [];
-        $pornstarStats = [];
-        $aliases = [];
-        $thumbnails = [];
+        $this->insertPornstars($data);
 
+        $idMap = $this->fetchPornstarIds();
+
+        $this->populateRelatedTables($data, $idMap);
+    }
+
+    private function insertPornstars($data)
+    {
+        $pornstars = [];
         $items = $data['items'];
         foreach ($items as $item) {
             if (!isset($item['id'], $item['name'], $item['attributes'])) {
@@ -41,7 +46,6 @@ class ProcessPornstarDataService
             }
 
             $attributes = $item['attributes'];
-            $stats = $attributes['stats'] ?? [];
 
             $pornstars[] = [
                 'pornhub_id' => $item['id'],
@@ -61,9 +65,34 @@ class ProcessPornstarDataService
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+        }
+
+        $this->processInBatches($pornstars, 'pornstarRepo');
+    }
+
+    private function fetchPornstarIds()
+    {
+        return $this->pornstarRepo->getPornstarIdMapping();
+    }
+
+    private function populateRelatedTables($data, $idMap)
+    {
+        $pornstarStats = [];
+        $aliases = [];
+        $thumbnails = [];
+
+        $items = $data['items'];
+        foreach ($items as $item) {
+            if (!isset($item['id'], $idMap[$item['id']], $item['attributes'])) {
+                continue;
+            }
+
+            $pornstarId = $idMap[$item['id']];
+            $attributes = $item['attributes'];
+            $stats = $attributes['stats'] ?? [];
 
             $pornstarStats[] = [
-                'pornstar_id' => $item['id'],
+                'pornstar_id' => $pornstarId,
                 'subscriptions' => $stats['subscriptions'] ?? 0,
                 'monthlySearches' => $stats['monthlySearches'] ?? 0,
                 'views' => $stats['views'] ?? 0,
@@ -80,7 +109,7 @@ class ProcessPornstarDataService
             if (isset($item['aliases'])) {
                 foreach ($item['aliases'] as $alias) {
                     $aliases[] = [
-                        'pornstar_id' => $item['id'],
+                        'pornstar_id' => $pornstarId,
                         'alias' => $alias,
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -90,9 +119,10 @@ class ProcessPornstarDataService
 
             if (isset($item['thumbnails'])) {
                 foreach ($item['thumbnails'] as $thumb) {
+//                    dd($thumb);
                     foreach ($thumb['urls'] as $url) {
                         $thumbnails[] = [
-                            'pornstar_id' => $item['id'],
+                            'pornstar_id' => $pornstarId,
                             'type' => $thumb['type'],
                             'height' => $thumb['height'] ?? 0,
                             'width' => $thumb['width'] ?? 0,
@@ -105,7 +135,6 @@ class ProcessPornstarDataService
             }
         }
 
-        $this->processInBatches($pornstars, 'pornstarRepo');
         $this->processInBatches($pornstarStats, 'pornstarStatsRepo');
         $this->processInBatches($aliases, 'aliasRepo');
         $this->processInBatches($thumbnails, 'thumbnailRepo');

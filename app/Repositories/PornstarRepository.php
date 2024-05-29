@@ -16,4 +16,9 @@ class PornstarRepository implements PornstarRepositoryInterface
             );
         }
     }
+
+    public function getPornstarIdMapping()
+    {
+        return Pornstar::pluck('id', 'pornhub_id');
+    }
 }

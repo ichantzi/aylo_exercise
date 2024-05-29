@@ -21,4 +21,9 @@ class PornstarRepository implements PornstarRepositoryInterface
     {
         return Pornstar::pluck('id', 'pornhub_id');
     }
+
+    public function find($id)
+    {
+        return Pornstar::findOrFail($id);
+    }
 }

@@ -8,5 +8,8 @@ interface PornstarRepositoryInterface
 
     public function getPornstarIdMapping();
 
+    public function find($id);
+
+
 }
 

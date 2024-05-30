@@ -1,11 +1,13 @@
 <template>
     <div class="container mx-auto">
-        <button @click="goToSearch" class="text-lg font-bold text-blue-500 hover:underline mt-5 mb-1 mx-auto block">&lt; Back to Search</button>
         <div class="flex justify-center">
             <div class="w-full md:w-3/4 lg:w-1/2 xl:w-1/3 bg-white p-8 rounded-lg shadow-lg">
+                <div class="self-center">
+                    <SearchBar></SearchBar>
+                </div>
                 <img :src="imageUrl" alt="Pornstar Image" class="w-full h-auto rounded-lg mb-4" v-if="imageUrl" />
                 <div v-else class="w-full h-64 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
-                    <p>Loading...</p>
+                    <p>Could not load image</p>
                 </div>
                 <h1 class="text-3xl font-bold mb-2">{{ pornstar.name }}</h1>
                 <p class="text-lg text-gray-700 mb-4">Aliases: {{ aliasNames }}</p>
@@ -49,9 +51,10 @@
 
 <script>
 import { ref } from 'vue';
-import { visit } from '@inertiajs/inertia';
-
+import searchBar from "@/Components/SearchBar.vue";
+import SearchBar from "@/Components/SearchBar.vue";
 export default {
+    components: {SearchBar},
     props: {
         pornstar: Object, // Pass the pornstar object as a prop
         image: String,    // Pass the image URL as a prop

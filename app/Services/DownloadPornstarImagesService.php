@@ -15,11 +15,11 @@ class DownloadPornstarImagesService
     protected $client;
     protected $concurrency;
 
-    public function __construct(ThumbnailRepositoryInterface $thumbnailRepo, $concurrency = 20)
+    public function __construct(Client $client, ThumbnailRepositoryInterface $thumbnailRepo)
     {
         $this->thumbnailRepo = $thumbnailRepo;
-        $this->client = new Client();
-        $this->concurrency = $concurrency;
+        $this->client = $client;
+        $this->concurrency = 40;
     }
 
     public function downloadImages($flushRedis = false)

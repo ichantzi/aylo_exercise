@@ -51,7 +51,6 @@
 
 <script>
 import { ref } from 'vue';
-import searchBar from "@/Components/SearchBar.vue";
 import SearchBar from "@/Components/SearchBar.vue";
 export default {
     components: {SearchBar},

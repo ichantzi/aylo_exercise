@@ -119,7 +119,6 @@ class ProcessPornstarDataService
 
             if (isset($item['thumbnails'])) {
                 foreach ($item['thumbnails'] as $thumb) {
-//                    dd($thumb);
                     foreach ($thumb['urls'] as $url) {
                         $thumbnails[] = [
                             'pornstar_id' => $pornstarId,

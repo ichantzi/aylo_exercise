@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\PornstarRepository;
+use App\Interfaces\Repositories\PornstarRepositoryInterface;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
 
@@ -10,7 +10,7 @@ class PornstarController extends Controller
 {
     protected $pornstarRepository;
 
-    public function __construct(PornstarRepository $pornstarRepository)
+    public function __construct(PornstarRepositoryInterface $pornstarRepository)
     {
         $this->pornstarRepository = $pornstarRepository;
     }
@@ -20,7 +20,7 @@ class PornstarController extends Controller
         return inertia('PornstarIndex');
     }
 
-    public function search(Request $request)
+    public function search(Request $request) // todo validate
     {
         $query = $request->input('query');
         $pornstars = $this->pornstarRepository->searchByName($query);
@@ -35,7 +35,7 @@ class PornstarController extends Controller
             abort(404, 'Pornstar not found');
         }
 
-        $imageKey = "pornstar_image:{$id}_tablet"; // or whatever type you need
+        $imageKey = "pornstar_image:{$id}_pc"; // todo serve per client media request
         $compressedImage = Redis::get($imageKey);
         $image = $compressedImage ? gzuncompress($compressedImage) : '';
 
